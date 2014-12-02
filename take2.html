@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<htmlL>
+<head>
+
+	<style type="text/css">
+
+		div#video_controls_bar{ width:400px; background: #333; padding: 10px; color:#CCC; margin: 0px auto;}
+		div#video_player_box{ background:#000; margin: 0px auto;}//width:320px; 
+		input#seekslider{ width:75px; }
+		input#volumeslider{ width:50px; }
+		
+		
+		div#test_box{ width: 320px; background: #333; color: #CCC; margin: 0px auto; visibility: hidden;}
+		input#taginput{ text-align: right; display: none;}
+
+	</style>
+
+	<script>
+
+		var vid, playbtn, seekslider, curtimetext, durtimetext, mutebtn, volumeslider, fullscreenbtn, tagbtn, test_box, randnum, video_player_box;
+		var db = openDatabase('mydb', '1.0', 'Test DB', 2 * 1024 * 1024);
+		
+		function initializePlayer(){
+			//set object references
+			vid = document.getElementById("my_video");
+			playbtn = document.getElementById("playpausebtn");
+			seekslider = document.getElementById("seekslider");
+			curtimetext = document.getElementById("curtimetext");
+			durtimetext = document.getElementById("durtimetext");
+			mutebtn = document.getElementById("mutebtn");
+			volumeslider = document.getElementById("volumeslider");
+			fullscreenbtn = document.getElementById("fullscreenbtn");
+			video_player_box = document.getElementById("video_player_box");
+
+
+			tagbtn = document.getElementById("tagbtn");
+			test_box = document.getElementById("test_box");
+			rand_num1 = document.getElementById("rand_num1");
+			rand_num2 = document.getElementById("rand_num2");
+			rand_num3 = document.getElementById("rand_num3");
+			rand_num4 = document.getElementById("rand_num4");
+
+			// add event listeners
+			playbtn.addEventListener("click",playPause,false);
+			seekslider.addEventListener("change",vidSeek,false);
+			vid.addEventListener("timeupdate",seektimeupdate,false);
+			mutebtn.addEventListener("click",vidmute,false);
+			volumeslider.addEventListener("change",setvolume,false);
+			fullscreenbtn.addEventListener("click",togglefullscreen,false);
+
+			tagbtn.addEventListener("click",turnontags,false);
+			rand_num1.addEventListener("click",gotorandom,false);
+//			rand_num1.addEventListener("click",jumpto(rand_num1.innerHTML),false);
+
+
+			rand_num1.innerHTML = Math.floor(Math.random() * 10) + 1;
+			rand_num2.innerHTML = Math.floor(Math.random() * 10) + 1;
+			rand_num3.innerHTML = Math.floor(Math.random() * 10) + 1;
+			rand_num4.innerHTML = Math.floor(Math.random() * 10) + 1;
+			
+			video_player_box.style.width = vid.videoWidth+"px";
+			video_player_box.style.height = vid.videoHeight+"px";
+			
+		}
+
+		window.onload = initializePlayer;
+
+		function playPause(){
+			if(vid.paused){
+				vid.play();
+				playbtn.innerHTML = "Pause";
+			}else{
+				vid.pause();
+				playbtn.innerHTML = "Play";
+			}
+			
+//			alert("button pressed");
+
+		}
+		function vidSeek(){
+			var seekto = vid.duration * (seekslider.value / 100);
+			vid.currentTime = seekto;
+//			alert(seekto);
+		}
+		function seektimeupdate(){
+			var nt = vid.currentTime * (100 / vid.duration);
+			seekslider.value = nt;
+			var curmins = Math.floor(vid.currentTime /60);
+			var cursecs = Math.floor(vid.currentTime - curmins * 60);
+			var durmins = Math.floor(vid.duration / 60);
+			var dursecs = Math.floor(vid.duration - durmins * 60);
+			if(cursecs < 10){
+				cursecs = "0"+cursecs;
+			}
+			if(dursecs < 10){
+				dursecs = "0"+dursecs;
+			}
+			if(curmins < 10){
+				curmins = "0"+curmins;
+			}
+			if(durmins < 10){
+				durmins = "0"+durmins;
+			}
+			curtimetext.innerHTML = curmins+":"+cursecs;
+			durtimetext.innerHTML = durmins+":"+dursecs;
+		}
+		function jumpto(vid_time){
+			vid.currentTime = vid_time;
+			if(vid.paused){
+			}else{
+				vid.pause();
+				playbtn.innerHTML = "Play";
+			}
+//			alert(vid_time);			
+
+		}
+		function vidmute(){
+			if(vid.muted){
+				vid.muted = false;
+				mutebtn.innerHTML = "mute";
+				volumeslider.value = 100;
+			}else{
+				vid.muted = true;
+				mutebtn.innerHTML = "Unmute";
+				volumeslider.value = 0;
+			}
+		}
+		function setvolume(){
+			vid.volume = volumeslider.value / 100;
+			alert(vid.volume);	
+
+		}
+		function togglefullscreen(){
+			if(vid.requestFullScreen){
+				vid.requestFullScreen();
+			}else if(vid.webkitRequestFullScreen) {
+				vid.webkitRequestFullScreen();
+			}else if(vid.mozRequestFullScreen){
+				vid.mozRequestFullScreen();
+			}
+
+		}
+		function gotorandom(){
+//			alert("this is the random number: " + document.getElementById("rand_num1").innerHTML);
+//			alert("this is the random number: " + rand_num1.innerHTML);
+			jumpto(rand_num1.innerHTML);
+//			playPause();
+
+		}
+		function turnontags(){
+//			document.getElementById()("test_box").style.visibility = "visible";
+//				alert("make visible!");
+				if (test_box.style.visibility == "visible") {
+					test_box.style.visibility = "hidden";
+					tagbtn.innerHTML = "Tags On";
+				}else {
+					test_box.style.visibility = "visible";
+					tagbtn.innerHTML = "Tags Off";
+				}
+		}
+		
+
+	</script>
+
+
+</head>
+<body>
+
+	<div id="video_player_box">
+		<video id="my_video" width="320" height="176" controls >//autoplay
+			<source src="mov_bbb.mp4" type="video/mp4">
+			<source src="mov_bbb.ogg" type="video/ogg">
+			Your browser does not support HTML5 video.
+		</video>
+		<div id="video_controls_bar">
+			<button id="playpausebtn">Pause</button>
+			<input id="seekslider" type="range" min="0" max="100" value="0" step="1">
+			<span id="curtimetext">00:00</span> / <span id="durtimetext">00:00</span>
+			<button id="mutebtn">Mute</button>
+			<input id="volumeslider" type="range" min="0" max="100" value="100" step="1">
+			<button id="fullscreenbtn">Full</button>
+			<button id="tagbtn">Tags On</button>
+		</div>
+	</div>
+
+	<div id="test_box">
+			<center>random #1: <span class="tag" id="rand_num1"></span></center>
+			<center>random #2: <span class="tag" id="rand_num2"></span></center>
+			<center>random #3: <span class="tag" id="rand_num3"></span></center>
+			<center>random #4: <span class="tag" id="rand_num4"></span></center>
+			<input type="text" id="taginput"></input>
+	</div>
+</body>
+</html>

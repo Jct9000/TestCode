@@ -1,0 +1,26 @@
+<html>
+<head>
+<title>Media Tagging</title>
+<script>
+
+    //Open or create the database
+    var db=openDatabase('media_tags','1.0','Medial tags for local use', 2 * 1024 * 1024);
+
+    //Initialize the database
+    db.transaction(function(tx) {
+      tx.executeSql('CREATE TABLE IF NOT EXISTS tagtbl(id integer primary key autoincrement, file_name, time, tagdesc)');
+      alert("creating db")
+    });
+    
+    //add tags to database
+    function addTag() {
+    	alert("adding tag!");
+    }
+    
+    
+</script>
+</head>
+<body>
+<button onclick="addTag()">Add Tag</button>
+</body>
+</html>

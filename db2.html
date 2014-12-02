@@ -1,0 +1,135 @@
+<html>
+<head>
+<title>Media Tagging</title>
+
+<script >
+
+    //Open or create the database
+    var db=openDatabase('media_tags','1.0','Medial tags for local use', 2 * 1024 * 1024);
+    
+    //Initialize the database
+    db.transaction(function(tx) {
+      tx.executeSql('CREATE TABLE IF NOT EXISTS tagtbl(id integer primary key autoincrement, file_name, time, tagdesc)');
+      alert("creating db")
+    });
+    
+    function addTag() {
+    alert("adding tag!");
+      var inputfile_name=document.getElementById("file_name").value;
+      var inputTime=document.getElementById("time").value;
+      var inputTagDesc=document.getElementById("tagdesc").value;
+alert(inputfile_name+" "+inputTime+" "+inputTagDesc);      
+      try {
+      	
+	      db.transaction(function(tx) {
+	        tx.executeSql('INSERT INTO tagtbl(file_name,time,tagdesc) VALUES (?,?,?)',[inputfile_name,inputTime,inputTagDesc], function(tx, results) {
+	          //Create the row and its cells
+	          alert("tras:"+results);
+	          var tagRow=document.createElement("tr");
+	          var id=document.createElement("td");
+	          var file_name=document.createElement("td");
+	          var time=document.createElement("td");
+	          var tagdesc=document.createElement("td");
+	          var removeButton=document.createElement("td");
+	          
+	        alert(results);
+	          //Set values coming from the database
+	          id.textContent=results.insertId;
+	          file_name.textContent=inputfile_name;
+	          time.textContent=inputTime;
+	          tagdesc.textContent=inputTagDesc;
+	          removeButton.innerHTML='<button onclick="removeTag('+ results.insertId +')">Delete</button>';
+	          //Add cells to the row
+	          tagRow.setAttribute("id","c"+results.insertId);
+	          tagRow.appendChild(id);
+	          tagRow.appendChild(file_name);
+	          tagRow.appendChild(time);
+	          tagRow.appendChild(tagdesc);
+	          tagRow.appendChild(removeButton);
+	          //Add the row to the table
+	          document.getElementById("tags").appendChild(tagRow);
+	        });
+	      });
+      }catch(e) {
+        alert("Error processing SQL: "+ e.message);
+        return;
+    }
+
+    }
+      
+    function removeTag(id) {
+    alert("removing tag");
+      db.transaction(function(tx) {
+        tx.executeSql('DELETE FROM tagtbl WHERE id=?', [id], function() {
+          //Dynamically remove the deleted tag from the table
+          var tagtbl=document.getElementById("tags");
+          var tagToDelete=document.getElementById("c"+id);
+          tagtbl.removeChild(tagToDelete);
+        });
+      });
+    }
+    
+    function listTags() {
+    alert("listing tag");
+      db.transaction(function(tx) {
+        tx.executeSql('SELECT * FROM tagtbl', [], function(tx, results) {
+          var len=results.rows.length;
+          var i;
+          for(i=0; i<len; i++) {
+          alert("i: "+i)
+            //Create the row and its cells
+            var tagRow=document.createElement("tr");
+            var id=document.createElement("td");
+            var file_name=document.createElement("td");
+            var time=document.createElement("td");
+            var tagdesc=document.createElement("td");
+            var removeButton=document.createElement("td");
+            alert(tagRow);
+            //Set values coming from the database
+            id.textContent=results.rows.item(i).id;
+            file_name.textContent=results.rows.item(i).file_name;
+            time.textContent=results.rows.item(i).time;
+            tagdesc.textContent=results.rows.item(i).tagdesc;
+            removeButton.innerHTML='<button onclick="removeTag('+ results.rows.item(i).id +')">Delete</button>';
+            //Add cells to the row
+            tagRow.setAttribute("id","c"+results.rows.item(i).id);
+            tagRow.appendChild(id);
+            tagRow.appendChild(file_name);
+            tagRow.appendChild(time);
+            tagRow.appendChild(tagdesc);
+            tagRow.appendChild(removeButton);
+            //Add the row to the table
+            document.getElementById("tags").appendChild(tagRow);
+          }
+        });
+      });
+    }
+    
+    window.addEventListener("load", listTags, true);
+    
+</script>
+
+</head>
+
+<body>
+ <div id="container">
+    <section id="input">
+      <h1>Add Tags</h1>
+      <label>File Name: <input type="text" name="file_name" id="file_name" /></label>
+      <label>Tag Time: <input type="number" name="time" id="time" /></label>
+      <label>Tag Description: <input type="text" name="tagdesc" id="tagdesc" /></label>
+      <button onclick="addTag()">Add</button>
+    </section>
+    <section id="output">
+      <h1>View Tags</h1>
+      <table id="tags" border="1" cellspacing="0" style="width:100%">
+        <th>Id</th>
+        <th>File Name</th>
+        <th>Time</th>
+        <th>Tag Description</th>
+      </table>
+    </section>
+  </div>
+</body>
+
+</html>
